@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "new:article": "zenn new:article"
+    "new:article": "zenn new:article",
+    "preview": "zenn preview"
   },
   "repository": "git@github.com:remew/zenn-articles.git",
   "author": "remew <foolishremew@gmail.com>",
