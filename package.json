@@ -2,6 +2,9 @@
   "name": "zenn-articles",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "new:article": "zenn new:article"
+  },
   "repository": "git@github.com:remew/zenn-articles.git",
   "author": "remew <foolishremew@gmail.com>",
   "license": "MIT",
