@@ -1,0 +1,11 @@
+{
+  "name": "zenn-articles",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github.com:remew/zenn-articles.git",
+  "author": "remew <foolishremew@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "zenn-cli": "^0.1.143"
+  }
+}
