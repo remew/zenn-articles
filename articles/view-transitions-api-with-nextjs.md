@@ -3,7 +3,7 @@ title: "View Transitions API × Next.js × TypeScriptの実用的なサンプル
 emoji: "🐈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["nextjs", "react", "typescript", "tech", "viewtransitionsapi"]
-published: false
+published: true
 ---
 3月7日頃に公開されたChrome 111にて追加されたAPIの1つに、 `View Transitions API` というものがありました。
 
