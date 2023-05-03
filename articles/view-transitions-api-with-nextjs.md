@@ -228,6 +228,7 @@ https://github.com/remew/view-transitions-api-example
 @[card](https://twitter.com/clockmaker/status/1633232835023872002)
 https://zenn.dev/yhatt/articles/cfa6c78fabc8fa
 https://w3c.github.io/csswg-drafts/css-view-transitions-1/
+https://dev.classmethod.jp/articles/typings-of-window-object/
 
 [^1]: 画面遷移の前後で一部の要素が連続的にアニメーションすることを指しています<br/>あまり一般的な用語ではありませんが、[Microsoftのドキュメント](https://learn.microsoft.com/ja-jp/windows/apps/design/motion/connected-animation) などに例があるため見ていただけるとイメージしやすいかと思います
 [^2]: ※画像は実際に撮影したものではなく、Stable Diffusion web UI上で生成してUpscaylでアップスケーリングやしたものを使用しています
