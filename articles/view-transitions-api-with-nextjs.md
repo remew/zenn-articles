@@ -1,5 +1,5 @@
 ---
-title: "View Transitions APIの型定義をしつつNext.jsで使う"
+title: "View Transitions API × Next.js × TypeScriptの実用的なサンプルを作った"
 emoji: "🐈"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["nextjs", "react", "typescript", "tech", "viewtransitionsapi"]
@@ -32,7 +32,7 @@ https://github.com/remew/view-transitions-api-example
 フォトギャラリーアプリケーションをイメージしており[^2]、以下の3つの画面が存在します。
 1. アルバム一覧画面（トップページ）
     - アルバムのサムネイルとタイトルをグリッド表示する画面
-1. アルバム詳細画面
+1. アルバム内画像一覧画面
     - アルバムに含まれる画像とタイトルをグリッド表示する画面
 1. 画像詳細画面
     - 拡大サイズの画像とタイトル、詳細説明などを表示する画面
@@ -76,7 +76,7 @@ TypeScriptでは `interface` の拡張が可能であるため、 `Document` イ
 
 ### ページ遷移時に `View Transitions API` を実行
 
-`View Transitions API` を用いて遷移アニメーションを実現するためには、 `document.startViewTransition(callback)` （以下、 `startViewTransition` ）に渡した `callback` 内でDOM操作が行われるか、 `callback` が呼ばれてから `callback` が返すPromiseが解決されるまでの間にDOM操作が行われる必要があります。
+`View Transitions API` を用いて遷移アニメーションを実現するためには、 `document.startViewTransition(callback)` （以下、 `startViewTransition` ）に渡した `callback` 内で同期的にDOM操作が行われるか、 `callback` がPromiseを返す場合はそのPromiseが解決されるまでの間にDOM操作が行われる必要があります。
 
 Next.jsでのページ遷移時に `startViewTransition` を呼び出すための方法としてまず始めに思いつくのが `useRouter` で受け取った `push` 関数でページ遷移を行うという方法です。
 
@@ -104,7 +104,7 @@ const navigateTo = useCallback((url: string) => {
 useEffect(() => {
   // ページ遷移開始時のコールバック関数
   const onRouteChangeStart = () => {
-    // Deferredクラスのインスタンスを生成 詳しくは後述
+    // Deferredクラスのインスタンスを生成し、refに保持する 詳しくは後述
     const d = new Deferred()
     deferredRef.current = d
     if (document.startViewTransition) {
@@ -114,7 +114,7 @@ useEffect(() => {
         await d.promise
       })
 
-      // context経由でviewTransitionインスタンスを受け取れるようにするために、
+      // context経由でViewTransitionインスタンスを受け取れるようにするために、
       // Appコンポーネントのstateとして保持している（理由は後述）
       setViewTransition(viewTransition)
     }
@@ -164,10 +164,10 @@ useEffect(() => {
 を表示する必要があります。
 
 画像詳細画面に遷移する際、単純に解像度の低い画像を引き伸ばすアニメーションを入れただけだと、（回線速度にもよりますが）高解像度の画像が読み込まれるまで透明の領域が表示されてしまいます。
-今回実装したアプリケーションではどのように解決しているのかですが、「画像一覧から詳細へ遷移するアニメーション」をもう一度見てみましょう。
+今回実装したアプリケーションではどのように解決しているのか、「画像一覧から詳細へ遷移するアニメーション」を詳しく見てみましょう。
 
 ![](https://storage.googleapis.com/zenn-user-upload/2a872c96cc73-20230414.gif)
-*アルバム詳細画面と画像詳細画面の遷移アニメーション*
+*アルバム内画像一覧画面と画像詳細画面の遷移アニメーション*
 
 画像の拡大後は一時的に単色表示にしつつ、少し待つと高解像度な画像が表示されるという動きになっています。
 
@@ -180,11 +180,11 @@ useEffect(() => {
 
 の2つが完了した際にオーバーレイ用の要素に `opacity: 0` なCSSクラスが当たるようになっており、これによって「画像の読み込みが完了したら高解像度画像を表示する」という挙動を実現しています。
 
-コードを見ていただくとわかるのですが、 `viewTransition.finished` のPromiseの解決を以て「`View Transitions API` によるアニメーションの完了」としており、これを行うために `_app.tsx` で `ViewTransition` インスタンスを保持したりcontext経由で子孫に渡したりしていたのでした。
+`View Transitions API` によるアニメーションの完了については、Promiseである `viewTransition.finished` の解決によって判定しており、これを行うために `_app.tsx` で `ViewTransition` インスタンスを保持したりcontext経由で子孫に渡したりしていたのでした。
 
-さらに、DOMの対応付けを行うための `view-transition-name` プロパティを指定するためのCSSクラスを付与する要素を条件によって「オーバーレイ用の要素」と「高解像度の画像」で切り替えることで、詳細画面から一覧画面へ戻る際には「高解像度の画像と低解像度の画像」が紐づくようにしているなどの工夫も入れています。
+さらに、DOMの対応付けを行うための `view-transition-name` プロパティを指定するためのCSSクラス（`.transitionTarget`）を付与する要素を条件によって「オーバーレイ用の要素」と「高解像度の画像」で切り替えることで、詳細画面から一覧画面へ戻る際には「高解像度の画像と低解像度の画像」が紐づくようにするといった工夫も入れています。
 
-実際のコードでは主に[PhotoDetailコンポーネント](https://github.com/remew/view-transitions-api-example/blob/914c5deb154d558f3749e474beddb782c5467280/src/features/album/components/PhotoDetail.tsx)で色々行っていますので、よければ見ていってください。
+[PhotoDetailコンポーネント](https://github.com/remew/view-transitions-api-example/blob/914c5deb154d558f3749e474beddb782c5467280/src/features/album/components/PhotoDetail.tsx)で細かい工夫や実装の詳細を見ることができますので、よければ見ていってください。
 
 ## 課題点
 
@@ -192,18 +192,21 @@ useEffect(() => {
 
 今回の実装ではNext.jsのルーティングイベントをフックすることで `View Transitions API` を実行しています。
 そのため、遷移アニメーションが不要なページ遷移でもフェードイン・フェードアウトがかかってしまうという課題を抱えています。
+画面遷移時に何かしらのフラグを渡せたら良さそうなのですが、良い方法が浮かびませんでした。
+これが今回の実装における最大の課題点だと思っています。
 
-今回の実装で達成したかったのは
+ただし、今回の実装で達成したかったのは
 
 1. `View Transitions API` を型安全性に配慮した上で扱う
 1. Next.jsの `Link` コンポーネントによるページ遷移で透過的に `View Transitions API` を扱う
 1. 解像度の違う画像に対しての比較的自然な接続型アニメーション
 
-の3点であるため、そういう意味では十分目標を達成してはいますが、やはりもっと柔軟に `View Transitions API` の有効・無効を切り替えることができるのが理想だったと感じています。
+の3点である上に、デフォルトの遷移アニメーションでも大きな違和感は無いと思われるため、そういう意味では十分目標を達成してはいます。
+ただ、もっと柔軟に `View Transitions API` の有効・無効を切り替えることができればより理想的な実装だったと感じています。
 
-## 感想
+## 実装した感想
 
-「これが欲しかった…！」の一言に付きます。
+「こんなAPIが欲しかった…！」の一言に付きます。
 
 数年前にQiitaで https://qiita.com/satsukies/items/a36cb5385282b7fedd3f このような記事を見かけた際に、「あぁ、WebでこういうUIが実装できたらどれだけ素晴らしいだろう！」と思って色々実装してみたのですが、応用の効く形で実装することができず歯痒い思いをしていました。
 そんな中で知ったこのAPIには一瞬で魅了され、すぐにサンプルや仕様書を見に行き、今回のアプリケーションを実装しました（その割に記事の公開までにかなり時間がかかってしまいましたが…）。
@@ -222,7 +225,7 @@ https://github.com/remew/view-transitions-api-example
 
 ## 参考リンク
 
-https://twitter.com/clockmaker/status/1633232835023872002
+@[card](https://twitter.com/clockmaker/status/1633232835023872002)
 https://zenn.dev/yhatt/articles/cfa6c78fabc8fa
 https://w3c.github.io/csswg-drafts/css-view-transitions-1/
 
