@@ -3,7 +3,8 @@ title: "Taskfileを使ってみよう"
 emoji: "✅"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["taskfile", "gotask", "自動化"]
-published: false
+published: true
+published_at: 2024-06-03 12:00
 ---
 
 株式会社FLINTERSで業務委託としてお世話になっています、フロントエンドエンジニアのれみゅーです。
